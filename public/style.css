@@ -1,0 +1,131 @@
+:root {
+    --brand-dark: #0A2617; /* Deep forest green from the reference */
+    --brand-accent: #144D2E;
+    --text-main: #111827;
+    --text-light: #6B7280;
+    --pure-white: #FFFFFF;
+    --border-color: #E5E7EB;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
+
+body {
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* This sets your PNG as the full background */
+    background: url('/Food-Bank-.png') center/cover no-repeat;
+    position: relative;
+}
+
+/* Creates a dark green tint over the background image so the white card pops */
+.overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(10, 38, 23, 0.75); 
+    z-index: 1;
+}
+
+.login-container {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    max-width: 440px;
+    padding: 20px;
+}
+
+/* Synthesizing the clean, floating white card aesthetic */
+.login-card {
+    background-color: var(--pure-white);
+    padding: 3.5rem 3rem;
+    border-radius: 4px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    text-align: center;
+}
+
+.card-header {
+    margin-bottom: 2.5rem;
+}
+
+.logo {
+    height: 48px;
+    margin-bottom: 1.5rem;
+}
+
+.card-header h1 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--brand-dark);
+    letter-spacing: 2px;
+    margin-bottom: 0.25rem;
+}
+
+.card-header p {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--text-light);
+    letter-spacing: 3px;
+}
+
+/* Minimalist input styling inspired by the reference outlines */
+.minimal-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.input-wrapper input {
+    width: 100%;
+    padding: 1rem 0;
+    border: none;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 0.85rem;
+    font-weight: 500;
+    letter-spacing: 1px;
+    color: var(--text-main);
+    background: transparent;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+.input-wrapper input::placeholder {
+    color: #9CA3AF;
+}
+
+.input-wrapper input:focus {
+    border-bottom: 2px solid var(--brand-accent);
+}
+
+.btn-primary {
+    margin-top: 1rem;
+    width: 100%;
+    padding: 1.1rem;
+    background-color: var(--brand-dark);
+    color: var(--pure-white);
+    border: none;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.btn-primary:hover {
+    background-color: var(--brand-accent);
+}
+
+.card-footer {
+    margin-top: 2.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+    font-size: 0.7rem;
+    color: var(--text-light);
+    line-height: 1.8;
+    letter-spacing: 1px;
+}
+
+.card-footer strong {
+    color: var(--brand-dark);
+}

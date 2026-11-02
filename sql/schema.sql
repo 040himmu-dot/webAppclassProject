@@ -1,11 +1,12 @@
-CREATE DATABASE IF NOT EXISTS foodbank_db;
+DROP DATABASE IF EXISTS foodbank_db;
+CREATE DATABASE foodbank_db;
 USE foodbank_db;
 
-CREATE TABLE IF NOT EXISTS UserAccount (
+CREATE TABLE UserAccount (
     userID INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     email VARCHAR(100) NOT NULL UNIQUE,
-    password VARCHAR(255) NOT NULL,
+    passwordHash VARCHAR(255) NOT NULL,
     phone VARCHAR(30),
     role VARCHAR(50) NOT NULL,
     householdSize INT,
@@ -18,7 +19,7 @@ CREATE TABLE IF NOT EXISTS UserAccount (
     IsArchived BOOLEAN DEFAULT FALSE
 );
 
-CREATE TABLE IF NOT EXISTS InventoryData (
+CREATE TABLE InventoryData (
     itemID INT AUTO_INCREMENT PRIMARY KEY,
     itemName VARCHAR(100) NOT NULL,
     category VARCHAR(50) NOT NULL,
@@ -33,7 +34,7 @@ CREATE TABLE IF NOT EXISTS InventoryData (
     FOREIGN KEY (donorID) REFERENCES UserAccount(userID)
 );
 
-CREATE TABLE IF NOT EXISTS Hamper (
+CREATE TABLE Hamper (
     hamperID INT AUTO_INCREMENT PRIMARY KEY,
     recipientID INT NOT NULL,
     requestDate DATE NOT NULL,
@@ -42,7 +43,7 @@ CREATE TABLE IF NOT EXISTS Hamper (
     FOREIGN KEY (recipientID) REFERENCES UserAccount(userID)
 );
 
-CREATE TABLE IF NOT EXISTS DistributionRecord (
+CREATE TABLE DistributionRecord (
     distributionID INT AUTO_INCREMENT PRIMARY KEY,
     hamperID INT NOT NULL,
     recipientID INT NOT NULL,
@@ -59,7 +60,7 @@ CREATE TABLE IF NOT EXISTS DistributionRecord (
     FOREIGN KEY (itemID) REFERENCES InventoryData(itemID)
 );
 
-CREATE TABLE IF NOT EXISTS PickupAppointment (
+CREATE TABLE PickupAppointment (
     appointmentID INT AUTO_INCREMENT PRIMARY KEY,
     hamperID INT NOT NULL,
     recipientID INT NOT NULL,
@@ -71,7 +72,7 @@ CREATE TABLE IF NOT EXISTS PickupAppointment (
     FOREIGN KEY (recipientID) REFERENCES UserAccount(userID)
 );
 
-CREATE TABLE IF NOT EXISTS Shift (
+CREATE TABLE Shift (
     shiftID INT AUTO_INCREMENT PRIMARY KEY,
     volunteerID INT NOT NULL,
     startDateTime DATETIME NOT NULL,
@@ -82,7 +83,7 @@ CREATE TABLE IF NOT EXISTS Shift (
     FOREIGN KEY (volunteerID) REFERENCES UserAccount(userID)
 );
 
-CREATE TABLE IF NOT EXISTS WasteLog (
+CREATE TABLE WasteLog (
     wasteID INT AUTO_INCREMENT PRIMARY KEY,
     itemID INT NOT NULL,
     category VARCHAR(50) NOT NULL,
@@ -92,7 +93,7 @@ CREATE TABLE IF NOT EXISTS WasteLog (
     FOREIGN KEY (itemID) REFERENCES InventoryData(itemID)
 );
 
-CREATE TABLE IF NOT EXISTS AlertLog (
+CREATE TABLE AlertLog (
     alertID INT AUTO_INCREMENT PRIMARY KEY,
     alertType VARCHAR(50) NOT NULL,
     itemID INT NULL,
@@ -102,8 +103,9 @@ CREATE TABLE IF NOT EXISTS AlertLog (
     IsArchived BOOLEAN DEFAULT FALSE
 );
 
-INSERT IGNORE INTO UserAccount (userID, name, email, password, phone, role, approvalStatus, householdSize) VALUES
-(1, 'Aakrosh Admin', 'admin@foodbank.ca', 'pass123', '604-111-1111', 'Coordinator', NULL, NULL),
-(2, 'Mahima Donor', 'donor@foodbank.ca', 'pass123', '604-222-2222', 'Donor', NULL, NULL),
-(3, 'Manjot Volunteer', 'volunteer@foodbank.ca', 'pass123', '604-333-3333', 'Volunteer', NULL, NULL),
-(4, 'Mahdi Recipient', 'recipient@foodbank.ca', 'pass123', '604-444-4444', 'Recipient', 'Approved', 4);
+-- Professional system test users (NO student names) with hashed 'pass123' passwords
+INSERT INTO UserAccount (userID, name, email, passwordHash, phone, role, approvalStatus, householdSize) VALUES
+(1, 'System Coordinator', 'admin@foodbank.ca', SHA2('pass123', 256), '604-555-0101', 'Coordinator', NULL, NULL),
+(2, 'Community Donor', 'donor@foodbank.ca', SHA2('pass123', 256), '604-555-0102', 'Donor', NULL, NULL),
+(3, 'Shift Volunteer', 'volunteer@foodbank.ca', SHA2('pass123', 256), '604-555-0103', 'Volunteer', NULL, NULL),
+(4, 'Registered Recipient', 'recipient@foodbank.ca', SHA2('pass123', 256), '604-555-0104', 'Recipient', 'Approved', 4);
