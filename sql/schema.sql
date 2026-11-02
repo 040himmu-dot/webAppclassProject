@@ -103,7 +103,6 @@ CREATE TABLE AlertLog (
     IsArchived BOOLEAN DEFAULT FALSE
 );
 
--- Professional system test users (NO student names) with hashed 'pass123' passwords
 INSERT INTO UserAccount (userID, name, email, passwordHash, phone, role, approvalStatus, householdSize) VALUES
 (1, 'System Coordinator', 'admin@foodbank.ca', SHA2('pass123', 256), '604-555-0101', 'Coordinator', NULL, NULL),
 (2, 'Community Donor', 'donor@foodbank.ca', SHA2('pass123', 256), '604-555-0102', 'Donor', NULL, NULL),
