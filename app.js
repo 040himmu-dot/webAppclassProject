@@ -69,6 +69,7 @@ if (fs.existsSync('./controllers/HamperController.js')) {
     app.use('/api/hamper', require('./controllers/HamperController'));
 }
 
+app.use('/api', require('./routes/coordinatorRoutes'));
 app.listen(3000, () => {
     console.log('Server running on http://localhost:3000');
 });
