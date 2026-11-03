@@ -2,8 +2,25 @@
 const { con } = require('../config/Database');
 
 class HamperService {
+    static isValidID(id) {
+        if (id === null || id === undefined || String(id).trim() === '') {
+            return false;
+        }
+
+        const numericID = Number(id);
+
+        return Number.isSafeInteger(numericID) && numericID > 0;
+    }
 // Check recipient approval
     static checkApproval(recipientID, callback) {
+
+        if(!this.isValidID(recipientID)) {
+            return callback(null, {
+                approved: false,
+                message: 'Invalid recipient ID.'
+
+            });
+        }
         const sql = `
         SELECT userID, name, approvalStatus
         FROM UserAccount
@@ -77,6 +94,8 @@ class HamperService {
         });
     }
 
+
+    // Schedule a pickup for an approved recipient
     static schedulePickup(recipientID, hamperID, scheduledDateTime, callback) {
 
         this.checkApproval(recipientID, (err, result) => {
