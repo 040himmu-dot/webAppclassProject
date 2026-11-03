@@ -1,6 +1,6 @@
 Online Food Bank Management System - Team 3
 
-📌 Project Overview
+ Project Overview
 
 This is the backend repository for the Online Food Bank Management System. Based on our Software Design Document (SDD) and Functionality Option 1, this system supports four user roles:
 
@@ -12,7 +12,7 @@ Volunteer: Processes inventory intake and fulfills scheduled hamper pickups.
 
 Recipient: Requests food hampers and schedules pickup appointments.
 
-🚀 Current Progress (Draft Review Status)
+Current Progress (Draft Review Status)
 
 For our initial draft review, we have successfully laid the core foundation of the application so that all teammates can now begin working on their individual features independently:
 
@@ -28,7 +28,7 @@ Programmed the automated pickup monitor to flag appointments as Delayed (>30 min
 
 Modular Folder Architecture: Segmented the project into modular Controller files so team members can code at the same time without overwriting each other's work.
 
-📂 Repository Guide (What Each File Does)
+Repository Guide (What Each File Does)
 
 schema.sql: The database blueprint. Run this in MySQL Workbench to create the tables and our 4 test users.
 
@@ -40,7 +40,7 @@ controllers/: This folder contains the individual workspaces (like InventoryCont
 
 public/: This folder is where we will place all of our frontend HTML, CSS, and UI files.
 
-🛠️ How to Run the Project Locally
+How to Run the Project Locally
 
 1. Set up the Database:
 
@@ -58,9 +58,9 @@ Run npm install to download dependencies (Express, Crypto).
 
 Run node app.js to start the backend. The server will run on http://localhost:3000.
 
-⏭️ Next Steps (For the Team)
+Next Steps:
 
-Moving forward, the team will implement the remaining Option 1 functionalities within their assigned controllers:
+Moving forward, our team will implement the remaining Option 1 functionalities within their assigned controllers:
 
 Inventory Management: Volunteer intake routes and Coordinator category management.
 
