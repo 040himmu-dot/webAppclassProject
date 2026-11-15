@@ -1,98 +1,61 @@
-const { con } = require('../config/Database');
+// Owner: Mahima - AnalyzerEngine (SDD 3.3): AI Pattern Detection (every 4 h). Starts Manjot's PickupMonitor too.
+// "AI" here = simple rules (DUE / IV / EFD), not machine learning - exactly as the SDD describes.
+const cron = require('node-cron');
+const { query } = require('../config/db');
+const EmailService = require('./EmailService');
+const PickupMonitor = require('./PickupMonitor');
 
-class AnalyzerEngine {
-    static analyzeInventoryData() {
-        const itemsSql = `
-            SELECT itemID, itemName, category, quantityOnHand, expirationDate, riskStatus,
-                   DATEDIFF(expirationDate, CURDATE()) AS DUE
-            FROM InventoryData
-            WHERE IsArchived = FALSE AND quantityOnHand > 0
-        `;
-
-        con.query(itemsSql, (err, items) => {
-            if (err) return console.error('Inventory Query Error:', err.message);
-
-            items.forEach(item => {
-                const ivSql = `
-                    SELECT COALESCE(SUM(dr.quantityGiven), 0) AS totalGiven
-                    FROM DistributionRecord dr
-                    JOIN InventoryData id ON dr.itemID = id.itemID
-                    WHERE id.category = ? 
-                      AND dr.distributionDate >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
-                      AND dr.IsArchived = FALSE
-                `;
-
-                con.query(ivSql, [item.category], (ivErr, ivRes) => {
-                    if (ivErr) return console.error('IV Query Error:', ivErr.message);
-
-                    const totalGiven = ivRes[0].totalGiven || 0;
-                    const IV = (totalGiven / 30) === 0 ? 0.1 : (totalGiven / 30);
-                    const EFD = item.quantityOnHand / IV;
-                    const DUE = item.DUE;
-
-                    let newStatus = 'Normal';
-                    if (DUE <= 0) {
-                        newStatus = 'Expired';
-                    } else if (DUE <= 7 || EFD > DUE) {
-                        newStatus = 'High Waste Risk';
-                    }
-
-                    if (newStatus !== item.riskStatus) {
-                        con.query(
-                            'UPDATE InventoryData SET riskStatus = ? WHERE itemID = ?',
-                            [newStatus, item.itemID]
-                        );
-
-                        if (newStatus === 'Expired') {
-                            con.query(
-                                'INSERT INTO WasteLog (itemID, category, quantityWasted, wasteDate) VALUES (?, ?, ?, CURDATE())',
-                                [item.itemID, item.category, item.quantityOnHand]
-                            );
-                        }
-
-                        if (newStatus === 'Expired' || newStatus === 'High Waste Risk') {
-                            con.query(
-                                'INSERT INTO AlertLog (alertType, itemID, sentToUserID, sentDateTime) VALUES (?, ?, 1, NOW())',
-                                [newStatus, item.itemID]
-                            );
-                        }
-                    }
-                });
-            });
-            console.log('AI Pattern Detection (DUE, IV, EFD) completed.');
-        });
-    }
-
-    static identifyStockTrend() {
-        this.analyzeInventoryData();
-    }
-
-    static checkPickups() {
-        const missedSql = `
-            UPDATE PickupAppointment 
-            SET status = 'Missed' 
-            WHERE status IN ('Scheduled', 'Delayed') 
-              AND TIMESTAMPDIFF(MINUTE, scheduledDateTime, NOW()) > 120 
-              AND IsArchived = FALSE
-        `;
-
-        const delayedSql = `
-            UPDATE PickupAppointment 
-            SET status = 'Delayed', wasDelayed = TRUE 
-            WHERE status = 'Scheduled' 
-              AND TIMESTAMPDIFF(MINUTE, scheduledDateTime, NOW()) > 30 
-              AND TIMESTAMPDIFF(MINUTE, scheduledDateTime, NOW()) <= 120 
-              AND IsArchived = FALSE
-        `;
-
-        con.query(missedSql, (err, missedRes) => {
-            if (err) return console.error('Missed Pickup Check Error:', err.message);
-            con.query(delayedSql, (err2, delayedRes) => {
-                if (err2) return console.error('Delayed Pickup Check Error:', err2.message);
-                console.log(`Pickup Check Done -> Missed: ${missedRes.affectedRows}, Delayed: ${delayedRes.affectedRows}`);
-            });
-        });
-    }
+/** Calculates DUE, IV, EFD and the risk the item *should* have. Writes nothing. */
+async function computeMetrics() {
+  const items = await query(
+    `SELECT ItemID, ItemName, Category, Unit, QuantityOnHand, ExpirationDate, RiskStatus,
+            DATEDIFF(ExpirationDate, CURDATE()) AS DUE
+     FROM InventoryItem WHERE IsArchived = FALSE AND QuantityOnHand > 0`);
+  const given = await query(
+    `SELECT i.Category, SUM(d.QuantityGiven) AS Given
+     FROM DistributionRecord d JOIN InventoryItem i ON i.ItemID = d.ItemID
+     WHERE d.IsArchived = FALSE AND d.Status = 'Distributed' AND d.DistributionDate >= NOW() - INTERVAL 30 DAY
+     GROUP BY i.Category`);
+  const givenBy = new Map(given.map((g) => [g.Category, Number(g.Given)]));
+  return items.map((it) => {
+    const total = givenBy.get(it.Category) || 0;
+    const IV = total === 0 ? 0.1 : total / 30;                 // fallback 0.1 avoids division by zero
+    const EFD = it.QuantityOnHand / IV;
+    let NewStatus = 'Normal';
+    if (it.DUE <= 0) NewStatus = 'Expired';
+    else if (it.DUE <= 7 || EFD > it.DUE) NewStatus = 'High Waste Risk';
+    return { ...it, IV: Math.round(IV * 100) / 100, EFD: Math.round(EFD * 10) / 10, NewStatus };
+  });
 }
 
-module.exports = AnalyzerEngine;
+/** analyzeInventoryData() + identifyStockTrend(): update RiskStatus, log waste, e-mail newly flagged items. */
+async function analyzeInventoryData() {
+  const metrics = await computeMetrics();
+  const newlyFlagged = [];
+  for (const m of metrics) {
+    if (m.NewStatus === m.RiskStatus) continue;
+    await query('UPDATE InventoryItem SET RiskStatus = ? WHERE ItemID = ?', [m.NewStatus, m.ItemID]);
+    if (m.NewStatus === 'Expired') {
+      await query(
+        `INSERT INTO WasteLog (ItemID, Category, Unit, QuantityWasted, WasteDate, Reason) VALUES (?,?,?,?,CURDATE(),'Expired')`,
+        [m.ItemID, m.Category, m.Unit, m.QuantityOnHand]);
+    }
+    if (m.NewStatus !== 'Normal') newlyFlagged.push({ ...m, RiskStatus: m.NewStatus });
+  }
+  let emailed = 0;
+  if (newlyFlagged.length) emailed = await EmailService.sendInventoryAlert(newlyFlagged);
+  const summary = { checked: metrics.length, newlyFlagged: newlyFlagged.length, emailedPeople: emailed, at: new Date().toISOString() };
+  console.log('[Analyzer] inventory run:', summary);
+  return summary;
+}
+
+function start() {
+  const safe = (fn, name) => () => fn().catch((e) => console.error(`[Analyzer] ${name} failed:`, e.message));
+  cron.schedule('0 */4 * * *', safe(analyzeInventoryData, 'inventory run'));   // 00:00, 04:00, 08:00 ...
+  cron.schedule('*/5 * * * *', safe(PickupMonitor.checkPickups, 'pickup monitor'));          // every 5 minutes
+  setTimeout(safe(analyzeInventoryData, 'inventory run'), 3000);
+  setTimeout(safe(PickupMonitor.checkPickups, 'pickup monitor'), 4000);
+  console.log('[Analyzer] scheduler started (inventory every 4 h, pickups every 5 min)');
+}
+
+module.exports = { computeMetrics, analyzeInventoryData, start };
