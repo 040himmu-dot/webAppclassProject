@@ -2,71 +2,39 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Online Food Bank Management System</title>
-    <style>
-        body { font-family: Arial, sans-serif; background: #f4f6f9; margin: 0; padding: 30px; }
-        .card { max-width: 550px; margin: 0 auto; background: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-        h2 { margin-top: 0; color: #2c3e50; }
-        input, button { width: 100%; padding: 10px; margin: 8px 0; box-sizing: border-box; }
-        button { background: #27ae60; color: #fff; border: none; font-weight: bold; cursor: pointer; border-radius: 4px; }
-        .role-panel { display: none; margin-top: 20px; padding: 15px; background: #eef7f2; border-left: 4px solid #27ae60; }
-        .hint { font-size: 13px; color: #555; background: #f9f9f9; padding: 10px; border-radius: 4px; margin-top: 10px; }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Food Bank System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-    <div class="card">
-        <h2>Online Food Bank Management System</h2>
-        <div id="loginBox">
-            <label>Email</label>
-            <input type="email" id="email" placeholder="Enter email">
-            <label>Password</label>
-            <input type="password" id="password" placeholder="Enter password">
-            <button onclick="loginUser()">Login</button>
-            <p id="msg" style="color:red;"></p>
-            <div class="hint">
-                <strong>Test Accounts (Password: pass123):</strong><br>
-                Coordinator: admin@foodbank.ca<br>
-                Donor: donor@foodbank.ca<br>
-                Volunteer: volunteer@foodbank.ca<br>
-                Recipient: recipient@foodbank.ca
-            </div>
+    <!-- The background image is handled in CSS -->
+    <div class="overlay"></div>
+
+    <main class="login-container">
+        <div class="login-card">
+            <header class="card-header">
+                <!-- Replace with your actual logo -->
+                <img src="Food-Bank-Icon.png" alt="Logo" class="logo" onerror="this.style.display='none'">
+                <h1>FOOD BANK</h1>
+                <p>MANAGEMENT PORTAL</p>
+            </header>
+
+            <form action="/api/login" method="POST" class="minimal-form">
+                <div class="input-wrapper">
+                    <input type="email" name="username" placeholder="EMAIL ADDRESS" required>
+                </div>
+                <div class="input-wrapper">
+                    <input type="password" name="password" placeholder="PASSWORD" required>
+                </div>
+                <button type="submit" class="btn-primary">SIGN IN</button>
+            </form>
+
+            <footer class="card-footer">
+                <p><strong>TEST ACCOUNTS (PASS123)</strong></p>
+                <p>admin | donor | volunteer | recipient</p>
+            </footer>
         </div>
-
-        <div id="dashboard" class="role-panel">
-            <h3 id="welcomeText"></h3>
-            <p><strong>Role Access Level:</strong> <span id="userRole"></span></p>
-            <div id="roleActions"></div>
-            <button onclick="location.reload()" style="background:#7f8c8d; margin-top:15px;">Logout</button>
-        </div>
-    </div>
-
-    <script>
-        async function loginUser() {
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const res = await fetch('/api/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password })
-            });
-            const data = await res.json();
-            if (!data.success) {
-                document.getElementById('msg').innerText = data.message;
-                return;
-            }
-            document.getElementById('loginBox').style.display = 'none';
-            document.getElementById('dashboard').style.display = 'block';
-            document.getElementById('welcomeText').innerText = 'Welcome, ' + data.user.name;
-            document.getElementById('userRole').innerText = data.user.role;
-
-            const actions = {
-                Coordinator: '<ul><li>Approve Recipient Accounts</li><li>Create/Delete User Accounts</li><li>Assign Volunteers</li><li>Generate Donation & Waste Reports</li><li>Run AI Waste Risk & Pickup Delay Check</li></ul>',
-                Donor: '<ul><li>Make Donation (InventoryController)</li><li>Search & View Donation History</li></ul>',
-                Volunteer: '<ul><li>Mark Schedule Status</li><li>View & Search Inventory</li><li>View Distribution History</li></ul>',
-                Recipient: '<ul><li>Request Food Hamper (HamperController)</li><li>Schedule Pickup Appointment</li><li>View Distribution History</li></ul>'
-            };
-            document.getElementById('roleActions').innerHTML = actions[data.user.role] || '';
-        }
-    </script>
+    </main>
 </body>
 </html>
