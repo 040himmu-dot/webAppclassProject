@@ -1,25 +1,21 @@
 {
-  "name": "webappclassproject",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "name": "online-food-bank-management-system",
+  "version": "1.1.0",
+  "description": "Online Food Bank Management System - Team 3 (INFO2413)",
+  "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node app.js",
+    "dev": "node --watch app.js"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/040himmu-dot/webAppclassProject.git"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
-  "bugs": {
-    "url": "https://github.com/040himmu-dot/webAppclassProject/issues"
-  },
-  "homepage": "https://github.com/040himmu-dot/webAppclassProject#readme",
+  "engines": { "node": ">=18" },
   "dependencies": {
-    "express": "^5.3.0",
-    "mysql": "^2.18.1"
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-session": "^1.18.0",
+    "multer": "^1.4.5-lts.1",
+    "mysql2": "^3.11.0",
+    "node-cron": "^3.0.3",
+    "nodemailer": "^6.9.14"
   }
 }
