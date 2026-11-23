@@ -1,127 +1,27 @@
-// Mahima: InventoryController
-
-
-const express = require('express');
 const InventoryService = require('../services/InventoryService');
 
-const router = express.Router();
-const inventoryService = new InventoryService();
+// categories
+exports.categories = async (req, res) => res.json(await InventoryService.listCategories());
+exports.createCategory = async (req, res) => res.status(201).json(await InventoryService.createCategory(req.body.CategoryName));
+exports.renameCategory = async (req, res) => res.json(await InventoryService.renameCategory(req.params.id, req.body.CategoryName));
+exports.deleteCategory = async (req, res) => { await InventoryService.deleteCategory(req.params.id); res.json({ message: 'Category deleted.' }); };
 
-class InventoryController {
-    receiveInventoryRequest(req, res) {
-        inventoryService.enterItem(req.body, (error, result) => {
-            if (error) {
-                return res.status(400).json({
-                    success: false,
-                    message: error.message
-                });
-            }
+// inventory (Volunteer writes, Coordinator reads)
+exports.search = async (req, res) => res.json(await InventoryService.searchInventory(req.query));
+exports.enter = async (req, res) => {
+  const ids = await InventoryService.enterItems(req.body.items, req.body.DonorID || null);
+  res.status(201).json({ message: `${ids.length} item(s) added to inventory.`, ids });
+};
+exports.modify = async (req, res) => res.json({ message: 'Item updated.', item: await InventoryService.modifyItem(req.params.id, req.body) });
+exports.remove = async (req, res) => {
+  await InventoryService.deleteItem(req.params.id, { recordWaste: req.body && req.body.recordWaste === true });
+  res.json({ message: 'Item removed from active inventory (kept in the archive).' });
+};
 
-            return res.status(201).json({
-                success: true,
-                message: 'Inventory item added successfully',
-                itemID: result.insertId
-            });
-        });
-    }
-
-    
-updateInventoryItem(req, res) {
-    inventoryService.modifyItem(
-        req.params.id,
-        req.body,
-        (error, result) => {
-            if (error) {
-                return res.status(400).json({
-                    success: false,
-                    message: error.message
-                });
-            }
-
-            if (result.affectedRows === 0) {
-                return res.status(404).json({
-                    success: false,
-                    message: 'Inventory item not found'
-                });
-            }
-
-            return res.status(200).json({
-                success: true,
-                message: 'Inventory item updated successfully'
-            });
-        }
-    );
-}
-
-
-deleteInventoryItem(req, res) {
-    inventoryService.deleteItem(req.params.id, (error, result) => {
-        if (error) {
-            return res.status(400).json({
-                success: false,
-                message: error.message
-            });
-        }
-
-        return res.status(200).json({
-            success: true,
-            message: 'Inventory item archived successfully'
-        });
-    });
-}
-
-    displayConfirmation(req, res) {
-        res.json({
-            message: 'Inventory operation completed'
-        });
-    }
-
-    
-displaySearchResults(req, res) {
-    const donorId = req.params.donorId;
-
-    const filters = {
-        date: req.query.date,
-        category: req.query.category
-    };
-
-    inventoryService.searchDonationHistory(
-        donorId,
-        filters,
-        (error, results) => {
-            if (error) {
-                return res.status(400).json({
-                    success: false,
-                    message: error.message
-                });
-            }
-
-            return res.status(200).json({
-                success: true,
-                donations: results
-            });
-        }
-    );
-}
-
-}
-
-const controller = new InventoryController();
-
-// Add inventory item
-router.post('/', (req, res) => {
-    controller.receiveInventoryRequest(req, res);
-});
-// Update inventory item
-router.put('/:id', (req, res) => {
-    controller.updateInventoryItem(req, res);
-});
-// Archive inventory item
-router.delete('/:id', (req, res) => {
-    controller.deleteInventoryItem(req, res);
-});
-// View and search donor donation history
-router.get('/donations/:donorId', (req, res) => {
-    controller.displaySearchResults(req, res);
-});
-module.exports = router;
+// donations (Donor)
+exports.donate = async (req, res) => {
+  const ids = await InventoryService.enterItems(req.body.items, req.session.user.id);
+  res.status(201).json({ message: 'Thank you! Your donation was recorded.', ids });
+};
+exports.donationHistory = async (req, res) =>
+  res.json(await InventoryService.searchDonationHistory(req.session.user.id, req.query));
