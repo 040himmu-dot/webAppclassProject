@@ -108,7 +108,7 @@ views.categories = async (main) => {
 views.alerts = async (main) => {
   const [rows, metrics] = await Promise.all([api.get('/alerts/log'), api.get('/alerts/expiry')]);
   const risky = metrics.filter((m) => m.NewStatus !== 'Normal');
-  main.append(pageHead('Alerts', 'Items at risk and every alert email the system has sent.'),
+  main.append(pageHead('Alerts', 'Items at risk annd email delivery history.'),
     h('h2', { class: 'section' }, 'Items needing priority distribution'),
     table([
       { label: 'Item', render: (m) => m.ItemName }, { label: 'Category', render: (m) => m.Category },

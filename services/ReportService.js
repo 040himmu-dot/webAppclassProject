@@ -23,8 +23,7 @@ function resolvePeriod({ period, year, month }) {
 async function donationDistributionSummary(range) {
   const donations = await query(
     `SELECT Category, Unit, CAST(SUM(QuantityReceived) AS UNSIGNED) AS Total
-     FROM InventoryItem WHERE IsArchived = FALSE AND DonationDate BETWEEN ? AND ?
-     GROUP BY Category, Unit ORDER BY Total DESC, Category`, [range.start, range.end]);
+FROM InventoryItem WHERE DonationDate BETWEEN ? AND ?     GROUP BY Category, Unit ORDER BY Total DESC, Category`, [range.start, range.end]);
   const [{ Hampers }] = await query(
     `SELECT COUNT(DISTINCT HamperID) AS Hampers FROM DistributionRecord
      WHERE IsArchived = FALSE AND Status = 'Distributed' AND DATE(DistributionDate) BETWEEN ? AND ?`, [range.start, range.end]);
@@ -44,8 +43,7 @@ async function donationDistributionSummary(range) {
 async function inventoryWasteSummary(range) {
   const waste = await query(
     `SELECT Category, Unit, CAST(SUM(QuantityWasted) AS UNSIGNED) AS Total
-     FROM WasteLog WHERE IsArchived = FALSE AND WasteDate BETWEEN ? AND ?
-     GROUP BY Category, Unit ORDER BY Total DESC, Category`, [range.start, range.end]);
+FROM WasteLog WHERE IsArchived = FALSE AND WasteDate BETWEEN ? AND ?     GROUP BY Category, Unit ORDER BY Total DESC, Category`, [range.start, range.end]);
   return { type: 'waste', period: range.label, waste };
 }
 
