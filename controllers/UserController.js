@@ -5,6 +5,8 @@ exports.createVolunteer = async (req, res) =>
   res.status(201).json({ message: 'Volunteer account created.', user: await UserService.createVolunteer(req.body, req.file) });
 exports.updateVolunteer = async (req, res) =>
   res.json({ message: 'Volunteer updated.', user: await UserService.updateVolunteer(req.params.id, req.body, req.file) });
+exports.updateUser = async (req, res) =>
+  res.json({ message: 'User account updated.', user: await UserService.updateUser(req.params.id, req.body) });
 exports.setApproval = async (req, res) =>
   res.json({ message: `Recipient ${req.body.Status.toLowerCase()}.`, user: await UserService.setApproval(req.params.id, req.body.Status) });
 exports.remove = async (req, res) => {

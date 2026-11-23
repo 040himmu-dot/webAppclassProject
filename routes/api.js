@@ -29,6 +29,7 @@ router.get('/volunteers', only('Coordinator'), w(Users.volunteers));
 router.get('/donors', only('Volunteer', 'Coordinator'), w(Users.donors));
 router.post('/users/volunteers', only('Coordinator'), upload.single('ProfileImage'), w(Users.createVolunteer));
 router.put('/users/volunteers/:id', only('Coordinator'), upload.single('ProfileImage'), w(Users.updateVolunteer));
+router.put('/users/:id', only('Coordinator'), w(Users.updateUser));
 router.patch('/users/:id/approval', only('Coordinator'), w(Users.setApproval));
 router.delete('/users/:id', only('Coordinator'), w(Users.remove));
 

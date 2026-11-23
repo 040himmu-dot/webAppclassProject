@@ -52,7 +52,7 @@ async function analyzeInventoryData() {
 function start() {
   const safe = (fn, name) => () => fn().catch((e) => console.error(`[Analyzer] ${name} failed:`, e.message));
   cron.schedule('0 */4 * * *', safe(analyzeInventoryData, 'inventory run'));   // 00:00, 04:00, 08:00 ...
-  cron.schedule('*/5 * * * *', safe(PickupMonitor.checkPickups, 'pickup monitor'));          // every 5 minutes
+ cron.schedule('*/5 * * * *', safe(PickupMonitor.checkPickups, 'pickup monitor'));          // every 5 minutes
   setTimeout(safe(analyzeInventoryData, 'inventory run'), 3000);
   setTimeout(safe(PickupMonitor.checkPickups, 'pickup monitor'), 4000);
   console.log('[Analyzer] scheduler started (inventory every 4 h, pickups every 5 min)');
