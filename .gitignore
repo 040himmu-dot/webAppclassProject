@@ -1,1 +1,12 @@
+# Dependencies
 node_modules/
+
+# Environment variables (CRITICAL for public repos)
+.env
+.env.local
+
+# macOS system files
+.DS_Store
+
+# Logs
+npm-debug.log*
