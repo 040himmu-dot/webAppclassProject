@@ -3,12 +3,16 @@
 Web app built from the SRS v1.1, SDD v1.1 and **Functionality Option 1**.
 Node.js + Express + MySQL backend, plain HTML/CSS/JavaScript frontend.
 
-## Run it (5 steps)
-1. **Database:** open MySQL Workbench, open `sql/schema.sql`, run the whole file. (It drops and recreates `foodbank_db`.)
-2. **Settings:** copy `.env.example` to `.env` and set `DB_PASSWORD` (your MySQL password) and `SESSION_SECRET`.
-3. **Install:** in the VS Code terminal run `npm install`.
-4. **Start:** `npm start` -> open http://localhost:3000
-5. **Log in** with any test account (password for all: `pass123`):
+## Run it (about 5 minutes, no Workbench needed)
+1. Get the project onto your computer and open its folder in VS Code. Install Node.js (LTS) and MySQL first if you have not.
+2. Open a terminal in VS Code (Terminal > New Terminal) and run: `npm install`
+3. Run: `npm run setup`  It asks for YOUR MySQL user and password, writes YOUR own `.env` file, and builds the database with sample data.
+4. Run: `npm start`, then open http://localhost:3000 and log in with `admin@foodbank.ca` / `pass123`.
+
+Other test logins (password `pass123`): `donor@foodbank.ca`, `volunteer@foodbank.ca`, `recipient@foodbank.ca`, `pending@foodbank.ca`.
+Check everything is connected: open a **second** terminal and run `npm run smoke`. It must say ALL CHECKS PASSED.
+Start over with fresh sample data any time: `npm run reset-db`.
+Your `.env` holds your own password and is never uploaded to GitHub. Never send it to anyone.
 
 | Role | Email |
 |---|---|
